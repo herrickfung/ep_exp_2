@@ -10,6 +10,7 @@ also return graph for each conditions for each participants in graph directory.
 
 from scipy.optimize import minimize
 from scipy.stats import norm
+import csv
 import matplotlib.pyplot as plt
 import numpy as np
 import os
@@ -156,26 +157,30 @@ def output(result, data_path):
                 for k in range(len(result[i][j])):
                     out_data = np.append(out_data, result[i][j][k])
 
-    out_data = pd.DataFrame(out_data)
-    out_data = out_data.transpose()
-    out_data.columns = ["Parti_No",
-                        "Parti_Name",
-                        "C1_Alpha",
-                        "C2_Alpha",
-                        "C3_Alpha",
-                        "C1_Beta",
-                        "C2_Beta",
-                        "C3_Beta",
-                        "C1_Success",
-                        "C2_Success",
-                        "C3_Success",
-                        "C1_R_Square",
-                        "C2_R_Square",
-                        "C3_R_Square",
-                        ]
-    out_data.to_csv(f"{data_path}" + "/fit_result.csv", sep=',', index = False)
+        if i < 1:
+            out = pd.DataFrame([out_data])
+            out.columns = ["Parti_No",
+                            "Parti_Name",
+                            "C1_Alpha",
+                            "C2_Alpha",
+                            "C3_Alpha",
+                            "C1_Beta",
+                            "C2_Beta",
+                            "C3_Beta",
+                            "C1_Success",
+                            "C2_Success",
+                            "C3_Success",
+                            "C1_R_Square",
+                            "C2_R_Square",
+                            "C3_R_Square",
+                            ]
+        else:
+            out.loc[i] = out_data
+        out_data = []
 
-    return out_data
+    out.to_csv(f"{data_path}" + "/fit_result.csv", sep=',', index = False)
+
+    return out
 
 
 def analysis(data):
@@ -192,15 +197,21 @@ def curve_graph():
 
 def main():
     in_path, out_data_path, out_graph_path = manage_path()
+    i = 0
     for path in in_path:
         master = [e for e in path.iterdir() if e.match('*.csv')]
         session = [e for e in path.iterdir() if e.match('*.txt')]
         merged_session = read_files(master, session)
         for_fit, parti_info = preprocess(merged_session)
         fit_result = fit(for_fit, parti_info[0], out_graph_path)
-        merged_parti = []
-        merged_parti.append(parti_info + fit_result)
-    for_analysis = output(merged_parti, out_data_path)
+        combine = [parti_info, fit_result]
+        if i == 0:
+            merged_all = combine
+        else:
+            merged_all  = [merged_all, combine]
+        i = i + 1
+
+    for_analysis = output(merged_all, out_data_path)
     analysis(for_analysis)
     stat_graph()
     curve_graph()
