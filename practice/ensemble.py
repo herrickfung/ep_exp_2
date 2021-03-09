@@ -171,7 +171,7 @@ def gabor(orientation, sd):
         grating.draw()
 
 
-def feedback(orientation, resp):
+def feedback(orientation, resp, count):
     # Create Feedback for Practice Trial and draw to memory
     '''
     Draw a green circle for correct, red for wrong
@@ -202,8 +202,11 @@ def feedback(orientation, resp):
 
     if resp_bin == answer:
         correct_fb.draw()
+        count = count + 1
     else:
         wrong_fb.draw()
+
+    return count
 
 
 def debriefing():
@@ -224,6 +227,7 @@ End of this Practice.\
 
 
 def main():
+    count = 0
     instruction()
     for i in range(No_of_Trials):
         black_fixation()
@@ -246,13 +250,14 @@ def main():
 
         elif any(keylist in resp for keylist in ("f", "j")):
             # Feedback Screen
-            feedback(triallist[i][0], resp)
+            count = feedback(triallist[i][0], resp, count)
             win.flip()
             core.wait(feedback_screen_time)
             # ISI
             win.flip()
             core.wait(isi_time)
     debriefing()
+    print(count / No_of_Trials)
 
 
 if __name__ == '__main__':
