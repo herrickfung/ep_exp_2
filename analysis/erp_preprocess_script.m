@@ -47,15 +47,17 @@ clear all;
 function PREPROCESSALL(InPPPath, OutPPFilePath)
     for k = 1:6
         InPPName = append(InPPPath, '\session_', num2str(k),'.raw');
-        PreProed = PrePro(InPPName);
+        [PreProed, RM_Chan_info] = PrePro(InPPName);
         OutFileName = append(OutPPFilePath, '\session_', num2str(k), '_preprocessed.set');
         PreProed = pop_saveset(PreProed, 'filename', OutFileName);
-        clear PreProed;
+        OutFileName = append(OutPPFilePath, '\session_', num2str(k), '_removed_channel_info.csv');
+        csvwrite(OutFileName, RM_Chan_info);
+        clear PreProed RM_Chan_info;
     end
 end
 
 
-function OutEEG = PrePro(InFileName)
+function [OutEEG, removed_channel] = PrePro(InFileName)
     % reference:
     % https://sccn.ucsd.edu/wiki/Makoto's_preprocessing_pipeline#Remove_line_noise_using_CleanLine_.2804.2F25.2F2020_updated.29% Import data
     EEG = pop_readegi(InFileName);
@@ -63,7 +65,7 @@ function OutEEG = PrePro(InFileName)
     % Downsample the data
     % our sampling rate is 250Hz, which is the frequency people usually downsample to, 
     % so i didn't downsample our data.
-    EEG = pop_epoch(EEG, {'gabo'}, [-0.2    0.504], 'epochinfo', 'yes');
+
     % Bandpass-Filter
     % High-Pass filter at 0.1 Hz
     EEG = pop_eegfiltnew(EEG, 0.1, [], [], false, [], false);
@@ -82,6 +84,18 @@ function OutEEG = PrePro(InFileName)
         'LineNoiseCriterion',4,'Highpass','off','BurstCriterion','off',...
         'WindowCriterion','off','BurstRejection','off','Distance','Euclidian');
 
+    % get removed and interpolate channel info.
+    full_channel_set = [];
+    removed_channel_set = [];
+    
+    for n = 1:numel(old_EEG.chanlocs)
+        full_channel_set = [full_channel_set, old_EEG.chanlocs(n).urchan];
+    end
+    for n = 1:numel(EEG.chanlocs)
+        removed_channel_set = [removed_channel_set, EEG.chanlocs(n).urchan];
+    end
+    removed_channel = setdiff(full_channel_set, removed_channel_set);
+    
     % Interpolate removed channels from above
     EEG = pop_interp(EEG, old_EEG.chanlocs, 'spherical');
     clear old_EEG;
