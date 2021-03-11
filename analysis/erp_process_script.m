@@ -1,14 +1,14 @@
 % Main Function Runs here.
-cd 'C:\Users\Herrick Fung\Desktop\Course Materials\Sem 4.1\PSY402 Research Thesis II\experiment_part2\result\eeglab2020_0';
-eeglab
-cd '..';
+cd 'C:\Program Files\Polyspace\R2020a\toolbox\eeglab_current\eeglab2021.0';
+eeglab;
+cd 'C:\Users\Herrick Fung\Desktop\Course Materials\Sem 4.1\PSY402 Research Thesis II\experiment_part2\result';
 
 % Create Core Paths
 CurrentPath = pwd;
-RawPath = fullfile(CurrentPath, "raw");
-PreProcessedPath = fullfile(CurrentPath, "preprocessed");
-MergedPath = fullfile(CurrentPath, "merged");
-SortedPath = fullfile(CurrentPath, "sorted");
+RawPath = fullfile(CurrentPath, 'raw');
+PreProcessedPath = fullfile(CurrentPath, 'preprocessed');
+MergedPath = fullfile(CurrentPath, 'merged');
+SortedPath = fullfile(CurrentPath, 'sorted');
 CorePaths = {PreProcessedPath, MergedPath, SortedPath};
 for i = 1:length(CorePaths)
     if not(isfolder(CorePaths{i}))
@@ -22,7 +22,7 @@ Parti_List(1:2) = [];
 for i = 1 : length(Parti_List)
     % Create All Required Folders
     InPPPath = fullfile(RawPath, Parti_List(i).name);
-    BehavioralPath = fullfile(InPPPath, "behavioral", "*.csv");
+    BehavioralPath = fullfile(InPPPath, 'behavioral', '*.csv');
     OutPPFilePath = fullfile(PreProcessedPath, Parti_List(i).name);
     OutMergedPath = fullfile(MergedPath, Parti_List(i).name);
     OutSortedPath = fullfile(SortedPath, Parti_List(i).name);
@@ -47,7 +47,6 @@ clear all;
 function PREPROCESSALL(InPPPath, OutPPFilePath)
     for k = 1:6
         InPPName = append(InPPPath, '\session_', num2str(k),'.raw');
-        disp(InPPName)
         PreProed = PrePro(InPPName);
         OutFileName = append(OutPPFilePath, '\session_', num2str(k), '_preprocessed.set');
         PreProed = pop_saveset(PreProed, 'filename', OutFileName);
@@ -64,7 +63,7 @@ function OutEEG = PrePro(InFileName)
     % Downsample the data
     % our sampling rate is 250Hz, which is the frequency people usually downsample to, 
     % so i didn't downsample our data.
-
+    EEG = pop_epoch(EEG, {'gabo'}, [-0.2    0.504], 'epochinfo', 'yes');
     % Bandpass-Filter
     % High-Pass filter at 0.1 Hz
     EEG = pop_eegfiltnew(EEG, 0.1, [], [], false, [], false);
@@ -115,8 +114,8 @@ end
 
 function MERGEALL(OutPPFilePath, OutMergedPath)
     for m = 1:6
-        InFileName = append(OutPPFilePath, '\session_', num2str(m), '_preprocessed.set');
-        LoadFile = pop_loadset(InFileName);
+        InFileName = append('session_', num2str(m), '_preprocessed.set');
+        LoadFile = pop_loadset(InFileName, OutPPFilePath);
         if m == 1
             MergedSet = LoadFile;
         else

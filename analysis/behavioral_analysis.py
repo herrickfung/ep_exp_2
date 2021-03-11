@@ -152,8 +152,6 @@ def output(result, data_path):
     for i in range (len(result)):
         for j in range(len(result[i])):
             if j < 2:
-                out_data = np.append(out_data, result[i][j])
-            else:
                 for k in range(len(result[i][j])):
                     out_data = np.append(out_data, result[i][j][k])
 
@@ -172,8 +170,7 @@ def output(result, data_path):
                             "C3_Success",
                             "C1_R_Square",
                             "C2_R_Square",
-                            "C3_R_Square",
-                            ]
+                            "C3_R_Square",]
         else:
             out.loc[i] = out_data
         out_data = []
@@ -204,11 +201,11 @@ def main():
         merged_session = read_files(master, session)
         for_fit, parti_info = preprocess(merged_session)
         fit_result = fit(for_fit, parti_info[0], out_graph_path)
-        combine = [parti_info, fit_result]
+        combine = [parti_info] + [fit_result]
         if i == 0:
-            merged_all = combine
+            merged_all = [combine]
         else:
-            merged_all  = [merged_all, combine]
+            merged_all  = merged_all + [combine]
         i = i + 1
 
     for_analysis = output(merged_all, out_data_path)
