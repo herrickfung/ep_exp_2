@@ -32,7 +32,6 @@ for i = 1 : length(Parti_List)
             mkdir(PartiPaths{j});
         end
     end
-    OutMergedPath = append(OutMergedPath, '\merge.set');
 
     % Loop All Functions
     PREPROCESSALL(InPPPath, OutPPFilePath);
@@ -137,6 +136,7 @@ function MERGEALL(OutPPFilePath, OutMergedPath)
         end
     end
 
+    OutMergedPath = append(OutMergedPath, '\merge.set');
     MergedSet = pop_saveset(MergedSet, 'filename', OutMergedPath);
     clear LoadFile MergedSet;
 end
@@ -159,7 +159,7 @@ function SORTEPOCH(BehavioralPath, OutMergedPath, OutSortedPath)
         trial_con.(fn{n}) = reshape(trial_con.(fn{n}), 1, 252);
     end
     
-    FullEpochs = pop_loadset(OutMergedPath);
+    FullEpochs = pop_loadset('\merge.set', OutMergedPath);
     SortedEpochs = struct('single_epochs', pop_selectevent(FullEpochs,'epoch',trial_con.single),...
                           'lowSD_epochs', pop_selectevent(FullEpochs,'epoch',trial_con.lowSD),...
                           'highSD_epochs', pop_selectevent(FullEpochs,'epoch',trial_con.highSD)...
@@ -168,7 +168,7 @@ function SORTEPOCH(BehavioralPath, OutMergedPath, OutSortedPath)
     efn = fieldnames(SortedEpochs);
     
     for o = 1:numel(efn)
-        OutFileName = append(OutSortedPath, efn{o}, '.set');
+        OutFileName = append(OutSortedPath, '\', efn{o}, '.set');
         SortedEpochs.(efn{o}) = pop_saveset(SortedEpochs.(efn{o}), 'filename', OutFileName);
     end
    
